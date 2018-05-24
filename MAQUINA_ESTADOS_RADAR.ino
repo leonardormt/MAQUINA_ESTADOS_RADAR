@@ -42,27 +42,38 @@ void setup_Motor()
 void setup_Coms()
 {
   int flag=0;
-  if(!digitalRead(pinMega))
-  setupCOMMS();
   int present;
   int past;
+  
+  if(!digitalRead(pinMega)){
+     
+  setupCOMMS();
+
   while(flag!=2)
   {
     
     if(flag==1)
     {
+     
       present=millis();
+      if((present-past)>tiempoEspera )
+      {
+        //sendMSG("$E003;");
+          flag=2;
+          nextState=error;
+      }
       if(!digitalRead(pinMega))
       {
-        if((present-past)>=tiempoEspera)
+        Serial.print((present-past));
+        if(((present-past)<=(tiempoEspera)) && ((present-past)>(tiempoEspera/2)) )
         {
-          sendMSG("C00");
+          sendMSG("$C00;");
           flag=2;
           nextState=Standby;
         }
         else
         {
-          sendMSG("C11");
+          sendMSG("$E001;");
           flag=2;
           nextState=error;
         }
@@ -70,17 +81,23 @@ void setup_Coms()
       }
       
     }
+  
 
     if(digitalRead(pinMega) && flag==0)
     {
       flag=1;
       past=millis();
-      present=past;
+      
+      sendMSG("$C01;");
+
+      Serial.println("YA ME HA llegado");
     }
   }
   
   
 }
+}
+
 
 void StandbyF(){
   

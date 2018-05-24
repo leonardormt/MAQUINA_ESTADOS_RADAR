@@ -1,6 +1,6 @@
 #include "radar.h"
 #include "motor_tri.h"
-#define pinMega 2 // entrada digital para el cambio de estado 
+#define pinMega A0 // entrada digital para el cambio de estado 
 #define tiempoEspera 1000
 
 
