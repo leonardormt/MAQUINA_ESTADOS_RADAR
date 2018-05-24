@@ -48,7 +48,7 @@ void moverMotor(){
     velocidad=1440;
 
    velocidad=map(velocidad,0,MAX_VEL,0,255);
-  analogWrite(pinmotor,velocidad);
+  analogWrite(pinMotor,velocidad);
   
 }
 
