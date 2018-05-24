@@ -7,7 +7,7 @@
 #define IN_AIR_MAX_TARGETS 20
 #define MAX_VEL 3000
 
-#define pinEstado 2 // entrada digital para el cambio de estado 
+
 
 
 
@@ -22,10 +22,12 @@ union bytetofloat {
 byte asBytes[4];
 float asFloat;
 } Vel,Dist,Ints,Ang;
+
 union bytetoInt {
 byte asBytes[4];
 int asInt;
 } ID;
+
 typedef struct Target{
   float velocidad;
   float angulo;
@@ -33,9 +35,7 @@ typedef struct Target{
   float intensidad;
   int ID;
 };
-enum State{
-  reposo, activo
-};
+
 typedef struct {
 
   float VEL;
@@ -80,8 +80,7 @@ uint32_t Aux=0;
 byte mac[]={0x2C,0x60,0x0C,0x92,0x88,0xB7};
 EthernetUDP Udp;
 
-//VARIALBLE DE ESTADO
-State currentState;
+
 //DATA sendingData;  //Esto es lo que pasamos por RS485
 byte packetBuffer[UDP_TX_PACKET_MAX_SIZE*4];  //Lugar donde recibiremos datos
 bool flag;  //Bandera para indicar si es el inicio del programa
@@ -127,17 +126,21 @@ void printIP (IPAddress ad)  //función para imprimir la dirección IP
 }
 
   
-  void inicializar(){
+  bool inicializar_radar(){
      Serial.begin(115200);   //Velocidad de datos
    Serial.println("COMIENZA LA PRUEBA RADAR");
    Ethernet.begin(mac,ip); //Nos conectamos a la IP deseada
   //delay?
    Serial.println(Ethernet.localIP());
-   if(Udp.begin(localPort))           //Comenzamos la conexión y comprobamos
-   Serial.println("CONEXION OK");
-  
-   Serial.println(Udp.remoteIP());
-   //delay 10
+   if(Udp.begin(localPort))
+   {
+    //Comenzamos la conexión y comprobamos
+    Serial.println("CONEXION OK");
+    Serial.print("IP del RADAR ----> ");
+    Serial.println(Udp.remoteIP());
+    return true;
+   }
+    return false;
   }
 
   
@@ -331,6 +334,11 @@ float sacar_Velocidad(){
       else
       Aux++;
 
+
+      if(!Count_Target_tiempoReal)
+      return 0;
+
+      
       closest_target=ordenarDistancia(ObjetivosTiempoReal, Count_Target_tiempoReal); //closest_target se referirá al objetivo mas cercano que se mueva en dirección al radar
       
       return closest_target.velocidad; 
