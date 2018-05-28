@@ -22,7 +22,7 @@ void setupCOMMS() {
 
   Serial3.begin(115200);
   Controllino_RS485Init(); 
-  sendMSG("$C10;");
+  sendMSG("$C001;");
   Serial.print("EEEE    ");
 
   /* This will initialize Controllino RS485 pins */

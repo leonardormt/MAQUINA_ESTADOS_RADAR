@@ -19,10 +19,11 @@ void enter_GL_State(){
 void setup_Radar()
 {
   if(inicializar_radar())
-  currentState=setupMotor;
+  nextState=setupMotor;
   else
   {
-    nextState=error;
+    nextState=setupMotor;
+    radar_error=true;
     Serial.println("ERROR INICIAL DE RADAR");
   }
 }
@@ -30,10 +31,11 @@ void setup_Radar()
 void setup_Motor()
 {
    if(ini_motor())
-  currentState=setupComs;
+  nextState=setupComs;
   else
   {
-    nextState=error;
+    nextState=setupComs;
+    motor_error=true;
     Serial.println("ERROR INICIAL DEL MOTOR");
   }
    
@@ -51,6 +53,15 @@ void setup_Coms()
 
   while(flag!=2)
   {
+    if(digitalRead(pinMega) && flag==0)
+    {
+      flag=1;
+      past=millis();
+      
+      //sendMSG("$C01;");
+
+      Serial.println("YA ME HA llegado");
+    }
     
     if(flag==1)
     {
@@ -58,22 +69,22 @@ void setup_Coms()
       present=millis();
       if((present-past)>tiempoEspera )
       {
-        //sendMSG("$E003;");
+          sendMSG("$E001;");
           flag=2;
           nextState=error;
       }
       if(!digitalRead(pinMega))
       {
         Serial.print((present-past));
-        if(((present-past)<=(tiempoEspera)) && ((present-past)>(tiempoEspera/2)) )
+        if(((present-past)<=(tiempoEspera)) && ((present-past)>(tiempoEspera-10)) )
         {
-          sendMSG("$C00;");
+          sendMSG("$C001;");
           flag=2;
           nextState=Standby;
         }
         else
         {
-          sendMSG("$E001;");
+          sendMSG("$E002;");
           flag=2;
           nextState=error;
         }
@@ -83,15 +94,7 @@ void setup_Coms()
     }
   
 
-    if(digitalRead(pinMega) && flag==0)
-    {
-      flag=1;
-      past=millis();
-      
-      sendMSG("$C01;");
-
-      Serial.println("YA ME HA llegado");
-    }
+    
   }
   
   
@@ -100,10 +103,21 @@ void setup_Coms()
 
 
 void StandbyF(){
-  
+//   moverMotor(0);
+   if (digitalRead(pinMega))
+//    nextstate=working; 
+ 
 }
 
 void workingF(){
+  switch (state)
+  {
+    case activo_SIN_OBJETIVO:activo_sin(); break;
+    
+    case activo_CON_OBJETIVO:activo_con(); break;
+    
+    
+  }
   
 }
 
@@ -159,6 +173,7 @@ void init_Gl_variables()
   Count_Target=0;
   flag=0;
   Count_Target_tiempoReal=0;
+  state=activo_SIN_OBJETIVO;
 }
 
 
