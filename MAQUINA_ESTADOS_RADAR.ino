@@ -30,15 +30,10 @@ void setup_Radar()
 
 void setup_Motor()
 {
-   if(ini_motor())
-  nextState=setupComs;
-  else
-  {
-    nextState=setupComs;
-    motor_error=true;
-    Serial.println("ERROR INICIAL DEL MOTOR");
-  }
    
+  nextState=setupComs;
+  
+
 }
 
 void setup_Coms()
@@ -50,7 +45,7 @@ void setup_Coms()
   if(!digitalRead(pinMega)){
      
   setupCOMMS();
-
+  enviar_data_error();
   while(flag!=2)
   {
     if(digitalRead(pinMega) && flag==0)
@@ -105,7 +100,7 @@ void setup_Coms()
 void StandbyF(){
 //   moverMotor(0);
    if (digitalRead(pinMega))
-//    nextstate=working; 
+    nextState=working; 
  
 }
 
@@ -176,14 +171,23 @@ void init_Gl_variables()
   state=activo_SIN_OBJETIVO;
 }
 
+Target b;
+
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   pinMode(pinMega,INPUT);
+
+  //setupCOMMS();
   
   init_Gl_variables();  // inicializamos las variables globales en esta función
-  
+  b.ID=3;
+  b.velocidad=3.4;
+  b.distancia=24.5;
+  b.angulo=1.2;
+  b.intensidad=90.1;
+  enviar_data_radar(b);
  setup_Coms();
  
 
@@ -194,5 +198,7 @@ void loop() {
   update_GL_State();
   
   enter_GL_State();*/
+
+  //enviar_data_radar(b);
 
 }

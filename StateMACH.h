@@ -23,7 +23,7 @@ globalState nextState;
 workingState state;
 
 bool motor_error;
-bool radar_error;
+bool radar_error=true;
 bool coms_error;
 bool working_error;
 bool some_error;

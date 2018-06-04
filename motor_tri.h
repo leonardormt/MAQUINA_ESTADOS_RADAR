@@ -35,7 +35,7 @@ class Motor_tri
 
   public:
   Motor_tri();
-  Motor_tri(int a){pin=a;}
+  Motor_tri(int a){pin=a;ini_motor();}
   void ini_motor();
   void moverMotor();
   void pwm();
