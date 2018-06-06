@@ -36,7 +36,7 @@ void setupCOMMS() {
   Serial3.begin(115200);
   Controllino_RS485Init(); 
   //sendMSG("$C001;");
-  Serial.print("EEEE    ");
+  Serial.print("Esperando respuesta del MASTER  ");
 
   /* This will initialize Controllino RS485 pins */
   //Same as
@@ -74,5 +74,64 @@ void enviar_data_error(){
   sendMSG(Motor_Radar_errors);
   else if(!(motor_error) && !(radar_error))
   sendMSG(NO_error);
+}
+
+
+void CheckRST(){
+    if((digitalRead(pinData)== HIGH) && !(stby_flag))
+      {
+        stby_t1=millis();
+        stby_flag=true;
+       }
+
+      if(stby_flag && ((digitalRead(pinData))== LOW))
+      {
+        stby_t2=millis();
+         if((stby_t2-stby_t1) > (tiempoEspera_reset - time_tol) && (stby_t2-stby_t1)<(tiempoEspera_reset + time_tol ))
+         {
+          Serial.print(stby_t2-stby_t1);
+          stby_flag=false;
+          nextState=setupComs;
+          Serial.println("  SUCCES Setup");
+          
+         }
+         else
+         {
+          Serial.print(stby_t2-stby_t1);
+            stby_flag=false;
+            Serial.println("  NOT SUCCES Setup");
+            //Pendiente por ver el tratamiento de estos errores
+         }
+         }
+}
+
+bool CheckSendData(){
+    if((digitalRead(pinData)== HIGH) && !(data_flag))
+      {
+        data_t1=millis();
+        data_flag=true;
+       }
+
+      if(data_flag && ((digitalRead(pinData))== LOW))
+      {
+        data_t2=millis();
+         if((data_t2-data_t1) > (tiempoEspera_data-time_tol) && (data_t2-data_t1)<(tiempoEspera_data + time_tol ))
+         {
+          Serial.print(data_t2-data_t1);
+          data_flag=false;
+          return true;
+          Serial.println("  SUCCES DATA");
+          
+         }
+         else
+         {
+          Serial.print(data_t2-data_t1);
+            data_flag=false;
+            Serial.println("  NOT SUCCES DATA");
+            
+            //Pendiente por ver el tratamiento de estos errores
+         }
+         }
+         return false;
 }
 

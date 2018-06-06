@@ -6,11 +6,8 @@
 #define TARGET_MAX_COUNT 100
 #define IN_AIR_MAX_TARGETS 20
 #define MAX_VEL 3000
-
-
-
-
-
+#define Distacia_minima 100
+#define intensidad_minima 50  //valores por ahora aleatorios
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -68,6 +65,7 @@ int Count_Target_tiempoReal;
 Target Objetivos[TARGET_MAX_COUNT]; //Este es un vector con elnumero totales de objetivos localizados
 Target ObjetivosTiempoReal[IN_AIR_MAX_TARGETS]; // vecor con los objetivos localizados en el momento
 Target closest_target;
+Target aux_target;
 
 
 //Velocidad a la que deberá girar la plataforma
@@ -132,7 +130,8 @@ void printIP (IPAddress ad)  //función para imprimir la dirección IP
    Ethernet.begin(mac,ip); //Nos conectamos a la IP deseada
   //delay?
    Serial.println(Ethernet.localIP());
-   if(Udp.begin(localPort))
+   Udp.begin(localPort);
+   if(Udp.remoteIP())
    {
     //Comenzamos la conexión y comprobamos
     Serial.println("CONEXION OK");
@@ -240,7 +239,7 @@ for( int i = 0; i < cantidad; i++)
     {
         for( int j = i; j < cantidad; j++)
         {
-            if(a[i].distancia > a[j].distancia)
+            if((a[i].distancia > a[j].distancia)&&(a[j].intensidad > intensidad_minima)) // La intensidad minima para considerar que el objeto detectado es el deseado
             {
                 aux = a[i];
                 a[i] = a[j];
@@ -348,4 +347,6 @@ float sacar_Velocidad(){
    return 0; // en el caso de no detectar nada o fallo supondremos que no va a aterrizar
              // ningun dron por lo que enviamos velocidad=0.
 }
+
+
 

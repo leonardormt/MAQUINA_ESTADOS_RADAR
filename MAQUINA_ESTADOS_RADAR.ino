@@ -1,6 +1,6 @@
 #include "StateMACH.h"
 
-
+Target b;
 
 
 
@@ -30,7 +30,7 @@ void setup_Radar()
 
 void setup_Motor()
 {
-   
+   Serial.println("Iniciando MOTOR TRI");
   nextState=setupComs;
   
 
@@ -41,14 +41,15 @@ void setup_Coms()
   int flag=0;
   int present;
   int past;
+  Serial.println("Iniciando comunicaciones");
   
-  if(!digitalRead(pinMega)){
+  if(!digitalRead(pinState)){
      
   setupCOMMS();
   enviar_data_error();
   while(flag!=2)
   {
-    if(digitalRead(pinMega) && flag==0)
+    if(digitalRead(pinState) && flag==0)
     {
       flag=1;
       past=millis();
@@ -64,24 +65,27 @@ void setup_Coms()
       present=millis();
       if((present-past)>tiempoEspera )
       {
+          Serial.println(present-past);
           sendMSG("$E001;");
           flag=2;
-          nextState=error;
+          nextState=Standby;
       }
-      if(!digitalRead(pinMega))
+      if(!digitalRead(pinState))
       {
         Serial.print((present-past));
-        if(((present-past)<=(tiempoEspera)) && ((present-past)>(tiempoEspera-10)) )
+        if(((present-past)<=(tiempoEspera)) && ((present-past)>(tiempoEspera-time_tol)) )
         {
           sendMSG("$C001;");
           flag=2;
           nextState=Standby;
+          Serial.print("VOY A Standby");
         }
         else
         {
-          sendMSG("$E002;");
+          Serial.println(present-past);
+          sendMSG("$E001;");
           flag=2;
-          nextState=error;
+          nextState=Standby;
         }
         
       }
@@ -99,8 +103,16 @@ void setup_Coms()
 
 void StandbyF(){
 //   moverMotor(0);
-   if (digitalRead(pinMega))
-    nextState=working; 
+   if (digitalRead(pinState))
+   { nextState=working; Serial.print("VOY A WORKING");}
+    else
+    nextState=Standby; 
+
+  
+  CheckRST();
+
+   if(CheckSendData())
+  enviar_data_radar(b);
  
 }
 
@@ -113,6 +125,9 @@ void workingF(){
     
     
   }
+  CheckRST();
+  if(CheckSendData())
+  enviar_data_radar(b);
   
 }
 
@@ -139,45 +154,96 @@ void reposos(){
   
 }
 
-void activo_con(){
-  
+void acercandoseF(){
+
+
+  Serial.print("Objetivo detectado");
   
       VEL_GIRO=sacar_Velocidad();
-
+      motor.moverMotor();
+   
+if(closest_target.distancia<=Distacia_minima)
+{
+   Serial.print("Objetivo va a aterrizar");
+  mstate=aterrizando;
+  aux_target=closest_target;
+  VEL_GIRO=aux_target.velocidad;
+  return;
+}
       if(!VEL_GIRO)
-      state_flag=false;
+        state=activo_SIN_OBJETIVO;
       
-      //moverMotor();//FALTA AUN POR HACER ESTA
-
-      //send_DATA(); // Y ESTA
       
+      else
+        motor.moverMotor();
     
+  
+}
+
+
+void aterrizandoF(){
+// moverMotor();
+ if(!aterrizaje_flag)
+ {
+  aterrizaje_t1=millis();
+  aterrizaje_flag=true;
+ }
+    if( (aterrizaje_flag==true) && (millis()-aterrizaje_t1)>= tiempo_aterrizaje)
+          {
+              state=activo_SIN_OBJETIVO;
+              mstate=acercandose;
+              aterrizaje_flag=false;
+              motor.frenado();  //funcion para frenar
+          }
+  
+  
+}
+
+void activo_con(){
+
+  switch (mstate)
+  {
+    case acercandose:acercandoseF(); break;
+    
+    case aterrizando:aterrizandoF(); break;
+    
+    
+  }
+  
 }
 
 void activo_sin(){
 
+  Serial.print("ESTOY TRABAJNDO PERO NO DETECTO");
 //  moverMotor();
+  int vel=sacar_Velocidad();
+  if(vel>0)
+    state=activo_CON_OBJETIVO;
+    else
+    motor.moverMotor();
+
   
-  if(sacar_Velocidad())
-    state_flag=true;
 }
 
 void init_Gl_variables()
 {
   currentState = setupRadar;
+  nextState=setupRadar;
   Count_Target=0;
   flag=0;
   Count_Target_tiempoReal=0;
   state=activo_SIN_OBJETIVO;
+  mstate=acercandose;
 }
 
-Target b;
+
 
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  pinMode(pinMega,INPUT);
+  pinMode(pinState,INPUT);
+  pinMode(pinData,INPUT);
 
   //setupCOMMS();
   
@@ -187,17 +253,17 @@ void setup() {
   b.distancia=24.5;
   b.angulo=1.2;
   b.intensidad=90.1;
-  enviar_data_radar(b);
- setup_Coms();
+  //enviar_data_radar(b);
+ //setup_Coms();
  
 
 }
 
 void loop() { 
-/*
+
   update_GL_State();
   
-  enter_GL_State();*/
+  enter_GL_State();
 
   //enviar_data_radar(b);
 

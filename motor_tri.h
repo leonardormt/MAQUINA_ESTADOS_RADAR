@@ -1,6 +1,8 @@
 #include <SPI.h>
 #include <Controllino.h>
 
+#define VEL_TO_RPM 1.25  // 1 entre 0.8m que tiene de radio
+
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -38,7 +40,7 @@ class Motor_tri
   Motor_tri(int a){pin=a;ini_motor();}
   void ini_motor();
   void moverMotor();
-  void pwm();
+  void frenado();
   
 };
 
@@ -63,15 +65,19 @@ void Motor_tri::moverMotor(){
   int velocidad=VEL_GIRO; //esta es la variable global en la que se almacena la velocidad del objetivo mas cercano.
 
   if(velocidad==0)
-    velocidad=1440;
+    velocidad=VEL_PREDET;
 
+   velocidad=velocidad*VEL_TO_RPM; //ya que la velocidad medida por el radar es lineal y la salida del motor es velocidad angular.
+   
    velocidad=map(velocidad,0,MAX_VEL,0,255);
   analogWrite(pinMotor,velocidad);
   
 }
 
 
-void Motor_tri::pwm(){
+void Motor_tri::frenado(){
+
+  analogWrite(pinMotor,0); // por ahora esta es la unica manera de frenar que conocemos
   
 }
 
