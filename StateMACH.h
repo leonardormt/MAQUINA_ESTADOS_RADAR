@@ -2,10 +2,12 @@
 #include "motor_tri.h"
 #define pinState A0 // entrada digital para el cambio de estado 
 #define pinData A1
+#define pinAterrizaje 3
 #define tiempoEspera 100
 #define tiempoEspera_reset 10
 #define tiempoEspera_data 5
-#define tiempo_aterrizaje 10000
+#define tiempo_aterrizaje 3000
+#define tiempo_espera_postAterrizaje 5000
 
 #define time_tol 2
 
@@ -53,4 +55,8 @@ int data_t2;
 bool aterrizaje_flag=false;
 int aterrizaje_t1;
 int aterrizaje_t2;
+
+
+
+
 

@@ -44,6 +44,14 @@ void setupCOMMS() {
 
 }
 
+void enviar_error_state()
+{
+  String msg;
+  msg+="$3DOLARES$;";
+  Serial.println(msg);
+  sendMSG(msg);
+  
+}
 void enviar_data_radar(Target a)
 {
   String msg;
@@ -76,7 +84,13 @@ void enviar_data_error(){
   sendMSG(NO_error);
 }
 
-
+void enviar_aterrizaje(){
+    String msg;
+    msg+="$A";
+     msg+=";";
+    sendMSG(msg);
+  
+}
 void CheckRST(){
     if((digitalRead(pinData)== HIGH) && !(stby_flag))
       {
@@ -91,7 +105,8 @@ void CheckRST(){
          {
           Serial.print(stby_t2-stby_t1);
           stby_flag=false;
-          nextState=setupComs;
+          nextState=setupRadar; //antes era setupComs
+          init_Gl_variables();
           Serial.println("  SUCCES Setup");
           
          }
@@ -134,4 +149,6 @@ bool CheckSendData(){
          }
          return false;
 }
+
+
 
