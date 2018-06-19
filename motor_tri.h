@@ -77,6 +77,8 @@ void Motor_tri::moverMotor(){
 
 void Motor_tri::frenado(){
 
+  
+
   analogWrite(pinMotor,0); // por ahora esta es la unica manera de frenar que conocemos
   
 }

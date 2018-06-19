@@ -29,8 +29,6 @@ void sendMSG(String buff) {
 }
 
 
-
-
 void setupCOMMS() {
 
   Serial3.begin(115200);
