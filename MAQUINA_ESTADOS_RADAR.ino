@@ -44,7 +44,7 @@ void setup_Coms()
   int present;
   int past;
   Serial.println("Iniciando comunicaciones");
-/*
+
   if (!digitalRead(pinState)) {
 
     setupCOMMS();
@@ -65,17 +65,17 @@ void setup_Coms()
       {
 
         present = millis();
-        if ((present - past) > tiempoEspera )
+        /*if ((present - past) > tiempoEspera )
         {
           Serial.println(present - past);
           sendMSG("$E001;");
           flag = 2;
           nextState = Standby;
-        }
+        }*/
         if (!digitalRead(pinState))
         {
           Serial.print((present - past));
-          if (((present - past) <= (tiempoEspera)) && ((present - past) > (tiempoEspera - time_tol)) )
+          if (((present - past) < (tiempoEspera + time_tol)) && ((present - past) > (tiempoEspera - time_tol)) )
           {
             sendMSG("$C001;");
             flag = 2;
@@ -99,7 +99,7 @@ void setup_Coms()
     }
 
 
-  }*/
+  }
 }
 
 
@@ -114,10 +114,13 @@ void StandbyF() {
     nextState = Standby;
 
 
+b.ID = 1;
   CheckRST();
 
   if (CheckSendData())
     enviar_data_radar(b);
+
+     printTargets();
 
 }
 
@@ -133,14 +136,16 @@ void workingF() {
   CheckRST();
   if (CheckSendData())
     enviar_data_radar(b);
-/*
+
   if (digitalRead(pinState) == LOW)
   {
     nextState = Standby;
     Serial.print("VOY A standby");
     mstate = acercandose;
     state = activo_SIN_OBJETIVO;
-  }*/
+  }
+
+ 
 
 }
 
@@ -158,6 +163,7 @@ void update_GL_State() {
 
 void acercandoseF() {
 
+b.ID = 3;
 
   Serial.println("Objetivo detectado");
 
@@ -184,7 +190,9 @@ void acercandoseF() {
 }
 
 void aterrizandoF() {
-  
+
+b.ID = 4;
+  Serial.print(" Aterrizando ");
   if (!aterrizaje_flag)
   {
     aterrizaje_t1 = millis();
@@ -215,7 +223,7 @@ void aterrizandoF() {
     while(a==1)
     {
       int b= millis();
-      if(digitalRead(pinState)==HIGH)// en realidad es LOW pero para las prueba vale
+      if(digitalRead(pinState)==LOW)// en realidad es LOW pero para las prueba vale
       {
         Serial.println("VOY A standby");
         a=0;
@@ -256,12 +264,13 @@ void activo_sin() {
   //  moverMotor();
   int vel = sacar_Velocidad();
 
-  Serial.println(vel);
+  //Serial.println(vel);
   if (vel > 0)
     {state = activo_CON_OBJETIVO; Serial.print("VOY A activo_CON_OBJETIVO");}
   else
     motor.moverMotor(); // para que se quede quieto.
 
+b.ID = 2;
 
 }
 
@@ -282,6 +291,8 @@ void setup() {
   Serial.begin(115200);
   pinMode(pinState, INPUT);
   pinMode(pinData, INPUT);
+  pinMode(pinAterrizaje, OUTPUT);
+  digitalWrite(pinAterrizaje, LOW);
 
   //setupCOMMS();
 
@@ -293,9 +304,7 @@ void setup() {
   b.intensidad = 90.1;
   VEL_GIRO = 1000;
 
-  pinMode(3, OUTPUT);
-  PORTE = PORTE & B11000111;
-  digitalWrite(3, LOW);
+
 
 
   //enviar_data_radar(b);
